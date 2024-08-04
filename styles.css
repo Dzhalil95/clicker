@@ -135,3 +135,11 @@ select {
     color: #d1a3ff;
     font-weight: bold;
 }
+
+#keyCountSelect{
+    display: none;
+}
+
+#creatorChannelBtn{
+    display: none;
+}

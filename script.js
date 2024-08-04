@@ -4,6 +4,7 @@ const EVENTS_DELAY = 20000;
 
 document.getElementById('startBtn').addEventListener('click', async () => {
     const startBtn = document.getElementById('startBtn');
+    const keyCountSelect = document.getElementById('keyCountSelect');
     const keyCountLabel = document.getElementById('keyCountLabel');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
@@ -12,8 +13,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     const keysList = document.getElementById('keysList');
     const copyAllBtn = document.getElementById('copyAllBtn');
     const generatedKeysTitle = document.getElementById('generatedKeysTitle');
-    const exportExcelBtn = document.getElementById('exportExcelBtn'); // Кнопка экспорта
-    const keyCount = 10;  // Установка значения по умолчанию в 10
+    const keyCount = 10;
 
     keyCountLabel.innerText = `Количество ключей: ${keyCount}`;
 
@@ -23,9 +23,9 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     keyContainer.classList.add('hidden');
     generatedKeysTitle.classList.add('hidden');
     keysList.innerHTML = '';
+    keyCountSelect.classList.add('hidden');
     startBtn.classList.add('hidden');
     copyAllBtn.classList.add('hidden');
-    exportExcelBtn.classList.add('hidden'); // Скрытие кнопки экспорта в начале
     startBtn.disabled = true;
 
     let progress = 0;
@@ -67,7 +67,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
 
     const keys = await Promise.all(Array.from({ length: keyCount }, generateKeyProcess));
 
-    if (keys.filter(key => key).length > 0) {
+    if (keys.length > 1) {
         keysList.innerHTML = keys.filter(key => key).map(key => `
             <div class="key-item">
                 <input type="text" value="${key}" readonly>
@@ -75,8 +75,14 @@ document.getElementById('startBtn').addEventListener('click', async () => {
             </div>
         `).join('');
         copyAllBtn.classList.remove('hidden');
-        exportExcelBtn.classList.remove('hidden'); // Показ кнопки экспорта после генерации ключей
-    } 
+    } else if (keys.length === 1) {
+        keysList.innerHTML = `
+            <div class="key-item">
+                <input type="text" value="${keys[0]}" readonly>
+                <button class="copyKeyBtn" data-key="${keys[0]}">Скопировать ключ</button>
+            </div>
+        `;
+    }
 
     keyContainer.classList.remove('hidden');
     generatedKeysTitle.classList.remove('hidden');
@@ -103,29 +109,17 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     progressText.innerText = '100%';
 
     startBtn.classList.remove('hidden');
+    keyCountSelect.classList.remove('hidden');
     startBtn.disabled = false;
-});
-
-// Функция для экспорта ключей в Excel
-function exportToExcel(keys) {
-    const worksheet = XLSX.utils.json_to_sheet(keys.map((key, index) => ({ ID: index + 1, Key: key })));
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Keys');
-    XLSX.writeFile(workbook, 'Generated_Keys.xlsx');
-}
-
-document.getElementById('exportExcelBtn').addEventListener('click', () => {
-    const keys = Array.from(document.querySelectorAll('.key-item input')).map(input => input.value);
-    exportToExcel(keys);
 });
 
 document.getElementById('generateMoreBtn').addEventListener('click', () => {
     document.getElementById('progressContainer').classList.add('hidden');
     document.getElementById('keyContainer').classList.add('hidden');
     document.getElementById('startBtn').classList.remove('hidden');
+    document.getElementById('keyCountSelect').classList.remove('hidden');
     document.getElementById('generatedKeysTitle').classList.add('hidden');
     document.getElementById('copyAllBtn').classList.add('hidden');
-    document.getElementById('exportExcelBtn').classList.add('hidden'); // Скрытие кнопки экспорта при сбросе
     document.getElementById('keysList').innerHTML = '';
     document.getElementById('keyCountLabel').innerText = 'Количество ключей:';
 });
